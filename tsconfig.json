@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "module": "CommonJS",
+        "resolveJsonModule": true,
+        "target": "ES2015",
+        "allowJs": false,
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "strict": true,
+        "noFallthroughCasesInSwitch": true,
+        "useUnknownInCatchVariables": false,
+        "skipLibCheck": true,
+        "declaration": true,
+        "baseUrl": ".",
+        "outDir": "output"
+    },
+    "include": ["mochow/**/*", "example/*"]
+}

@@ -1,0 +1,28 @@
+Global:
+  version: 2.0
+
+Default:
+  profile: [build]
+
+Profiles:
+  - profile:
+    name: build
+    mode: AGENT
+    environment:
+      image: DECK_CENTOS7U5_K3
+      tools:
+        - nodejs: 18.3.0
+    check:
+      - reuse: TASK
+        enable: true
+    build:
+      command: sh ./scripts/build.sh
+    # 如果你希望使用构建的缓存，可以参考：http://fe.baidu-int.com/build/summary#%E6%9E%84%E5%BB%BA%E7%BC%93%E5%AD%98
+    # 但打开缓存有可能让构建的结果和预期不一致，建议仔细做下测试
+    # 如果你要缓存node_modules，请务必有package-lock.json或yarn.lock
+    #   cache:
+    #     enable: true
+    #     paths:
+    #       - node_modules
+    artifacts:
+      release: true

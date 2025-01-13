@@ -26,7 +26,10 @@ export enum IndexType {
 
     // scalar index type
     SecondaryIndex = "SECONDARY",
-    InvertedIndex = "INVERTED"
+    InvertedIndex = "INVERTED",
+
+    // filtering index
+    FilteringIndex = "FILTERING"
 }
 
 export enum InvertedIndexAnalyzer {
@@ -46,6 +49,10 @@ export enum InvertedIndexFieldAttribute {
     Analyzed = "ATTRIBUTE_ANALYZED"
 }
 
+export enum IndexStructureType {
+    Default = "DEFAULT",
+    Bitmap = "BITMAP"
+}
 
 export enum FieldType {
     // scalar field type
@@ -70,7 +77,9 @@ export enum FieldType {
     TextGBK = "TEXT_GBK",
     TextGB18030 = "TEXT_GB18030",
 
-    FloatVector = "FLOAT_VECTOR"
+    FloatVector = "FLOAT_VECTOR",
+
+    Array = "ARRAY"
 }
 
 export enum AutoBuildPolicyType {
@@ -142,4 +151,27 @@ export enum ServerErrCode {
     IndexDuplicated = 93,
     InvalidIndexState = 94,
     PrimaryKeyDuplicated = 100,
+}
+
+export enum ElementType {
+    Bool = "BOOL",
+    Int8 = "INT8",
+    Uint8 = "UINT8",
+    Int16 = "INT16",
+    Uint16 = "UINT16",
+    Int32 = "INT32",
+    Uint32 = "UINT32",
+    Int64 = "INT64",
+    Uint64 = "UINT64",
+    Float = "FLOAT",
+    Double = "DOUBLE",
+    Date = "DATE",
+    Datetime = "DATETIME",
+    Timestamp = "TIMESTAMP",
+    String = "STRING",
+    Binary = "BINARY",
+    UUID = "UUID",
+    Text = "TEXT",
+    TextGBK = "TEXT_GBK",
+    TextGB18030 = "TEXT_GB18030",
 }

@@ -12,8 +12,9 @@
  * and limitations under the License.
  */
 
-import { CommonResponse } from "./Common"
-import { FieldType, IndexSchema, PartitionType, TableState } from "."
+import { CommonResponse, CommonNamespaceArgs } from "./Common";
+import { FieldType, PartitionType, TableState, ElementType } from "./Const";
+import { IndexSchema } from "./MochowIndex";
 
 export interface PartitionParams {
     partitionType: PartitionType
@@ -28,11 +29,25 @@ export interface FieldSchema {
     autoIncrement?: boolean
     notNull?: boolean
     dimension?: number
+    elementType?: ElementType
+    maxCapacity?: number
 }
 
 export interface TableSchema {
     fields: FieldSchema[]
     indexes: IndexSchema[]
+}
+
+export interface CreateTableArgs extends CommonNamespaceArgs {
+    description?: string;
+    replication: number;
+    partitionParams: PartitionParams;
+    enableDynamicField?: boolean;
+    schema: TableSchema;
+}
+
+export interface AddFieldArgs extends CommonNamespaceArgs {
+    schema: TableSchema;
 }
 
 export interface ListTableResponse extends CommonResponse {

@@ -14,7 +14,7 @@
 
 import {CommonResponse} from "./Common"
 
-export interface CreateDatabaseRequest {
+export interface CreateDatabaseArgs {
     database: string
 }
 

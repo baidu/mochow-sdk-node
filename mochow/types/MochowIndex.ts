@@ -13,7 +13,7 @@
  */
 
 import { CommonResponse } from "./Common"
-import { AutoBuildPolicyType, IndexState, IndexType, InvertedIndexFieldAttribute, MetricType } from "./Const"
+import { AutoBuildPolicyType, ElementType, IndexState, IndexStructureType, IndexType, InvertedIndexFieldAttribute, MetricType } from "./Const"
 
 export type IndexParams = Record<string, any>
 
@@ -59,13 +59,18 @@ export function AutoBuildIncrement(rowCountIncrement: number, rowCountIncrementR
     return policy
 }
 
+export type FilteringIndexField = {
+    field: string
+    indexStructureType: IndexStructureType
+}
+
 export interface IndexSchema {
     indexName: string
     indexType: IndexType
     metricType?: MetricType
     params?: IndexParams
     field?: string
-    fields?: string[]
+    fields?: string[] | FilteringIndexField[]
     fieldAttributes? : InvertedIndexFieldAttribute[]
     state?: IndexState
     autoBuild?: boolean

@@ -13,25 +13,19 @@
  */
 
 import {
+    MochowClient,
     Row,
     IndexSchema,
     FieldSchema,
     ClientConfiguration,
     AutoBuildTiming,
-    PartitionParams,
     TableSchema,
     FieldType,
     IndexType,
     MetricType,
     PartitionType,
-    PrimaryKey,
-    PartitionKey,
     ReadConsistency,
-    UpdateFields,
     IndexState,
-    SearchParams,
-    ANNSearchParams,
-    BatchANNSearchParams,
     TableState,
     ServerErrCode,
     InvertedIndexFieldAttribute,
@@ -48,8 +42,14 @@ import {
     BM25SearchArgs,
     HybridSearchArgs,
     HybridSearchRequest,
-} from "../mochow/types/index"
-import { MochowClient } from "../mochow/MochowClient"
+    CreateTableArgs,
+    InsertArgs,
+    QueryArgs,
+    SelectArgs,
+    ElementType,
+    IndexStructureType,
+    BatchQueryArgs,
+} from "../mochow";
 
 export class MochowTest {
     private client: MochowClient
@@ -71,8 +71,7 @@ export class MochowTest {
     }
 
     public async createTable() {
-        let fields: FieldSchema[]
-        fields = [
+        let fields: FieldSchema[] = [
             {
                 fieldName: "id",
                 fieldType: FieldType.String,
@@ -106,6 +105,12 @@ export class MochowTest {
                 fieldName: "segment",
                 fieldType: FieldType.Text,
                 notNull: true
+            },
+            {
+                fieldName: "arrayField",
+                fieldType: FieldType.Array,
+                elementType: ElementType.String,
+                notNull: true
             }
         ]
 
@@ -116,6 +121,16 @@ export class MochowTest {
                 indexName: "book_name_idx",
                 field: "bookName",
                 indexType: IndexType.SecondaryIndex,
+            },
+            {
+                indexName: "filtering_idx",
+                indexType: IndexType.FilteringIndex,
+                fields: [
+                    {
+                        field: "author",
+                        indexStructureType: IndexStructureType.Bitmap
+                    }
+                ]
             },
             {
                 indexName: "vector_idx",
@@ -142,10 +157,20 @@ export class MochowTest {
         ]
 
         // create table
-        let partitionParams: PartitionParams = { partitionType: PartitionType.HASH, partitionNum: 1 }
         let schema: TableSchema = { fields: fields, indexes: indexes }
-
-        let resp = await this.client.createTable(this.database_name, this.table_name, "test", 1, partitionParams, true, schema)
+        let createTableReq: CreateTableArgs = {
+            database: this.database_name,
+            table: this.table_name,
+            description: "test",
+            replication: 1,
+            partitionParams: {
+                partitionType: PartitionType.HASH,
+                partitionNum: 1,
+            },
+            enableDynamicField: false,
+            schema: schema
+        }
+        let resp = await this.client.createTable(createTableReq)
         if (resp.code != 0) {
             console.log("fail to create table due to: " + resp.msg)
             return resp
@@ -186,6 +211,7 @@ export class MochowTest {
                 "page": 21,
                 "vector": [0.2123, 0.21, 0.213],
                 "segment": "富贵功名，前缘分定，为人切莫欺心。",
+                "arrayField": [],
             },
             {
                 "id": "0002",
@@ -194,6 +220,7 @@ export class MochowTest {
                 "page": 22,
                 "vector": [0.2123, 0.22, 0.213],
                 "segment": "正大光明，忠良善果弥深。些些狂妄天加谴，眼前不遇待时临。",
+                "arrayField": ["细作"],
             },
             {
                 "id": "0003",
@@ -202,6 +229,7 @@ export class MochowTest {
                 "page": 23,
                 "vector": [0.2123, 0.23, 0.213],
                 "segment": "细作探知这个消息，飞报吕布。",
+                "arrayField": ["细作", "吕布"],
             },
             {
                 "id": "0004",
@@ -210,6 +238,7 @@ export class MochowTest {
                 "page": 24,
                 "vector": [0.2123, 0.24, 0.213],
                 "segment": "布大惊，与陈宫商议。宫曰：“闻刘玄德新领徐州，可往投之。” 布从其言，竟投徐州来。有人报知玄德。",
+                "arrayField": ["吕布", "陈宫", "刘玄德"],
             },
             {
                 "id": "0005",
@@ -218,9 +247,15 @@ export class MochowTest {
                 "page": 25,
                 "vector": [0.2123, 0.24, 0.213],
                 "segment": "玄德曰：“布乃当今英勇之士，可出迎之。”糜竺曰：“吕布乃虎狼之徒，不可收留；收则伤人矣。",
+                "arrayField": ["玄德", "吕布", "糜竺"],
             }
         ]
-        let resp = await this.client.insertRows(this.database_name, this.table_name, data)
+        let insertArgs: InsertArgs = {
+            database: this.database_name,
+            table: this.table_name,
+            rows: data,
+        }
+        let resp = await this.client.upsert(insertArgs)
         if (resp.code != 0) {
             console.log("fail to upsert row due to: " + resp.msg)
             return resp
@@ -229,16 +264,17 @@ export class MochowTest {
     }
 
     public async queryData() {
-        let pk: PrimaryKey = { "id": "0001" }
-        let projections: string[] = ["id", "bookName"]
-        let resp = await this.client.queryRow(
-            this.database_name,
-            this.table_name,
-            pk,
-            undefined,
-            projections,
-            false,
-            ReadConsistency.EVENTUAL)
+        let queryArgs: QueryArgs = {
+            database: this.database_name,
+            table: this.table_name,
+            primaryKey: {
+                "id": "0001"
+            },
+            projections: ["id", "bookName"],
+            retrieveVector: false,
+            readConsistency: ReadConsistency.EVENTUAL
+        }
+        let resp = await this.client.query(queryArgs);
         if (resp.code != 0) {
             console.log("fail to query data due to: " + resp.msg)
             return resp
@@ -247,15 +283,43 @@ export class MochowTest {
         return resp
     }
 
+    public async batchQuery() {
+        let queryArgs: BatchQueryArgs = {
+            database: this.database_name,
+            table: this.table_name,
+            keys: [
+                {
+                    primaryKey: {
+                        "id": "0001"
+                    }
+                },
+                {
+                    primaryKey: {
+                        "id": "0002"
+                    }
+                }
+            ],
+            projections: ["id", "bookName"],
+            retrieveVector: false,
+            readConsistency: ReadConsistency.EVENTUAL
+        }
+        let resp = await this.client.batchQuery(queryArgs);
+        if (resp.code != 0) {
+            console.log("fail to query data due to: " + resp.msg)
+            return resp
+        }
+        console.log("batch query result: ", JSON.stringify(resp, null, " "))
+        return resp
+    }
+
     public async selectData() {
-        let projections: string[] = ["id", "bookName"]
-        let resp = await this.client.selectRows(
-            this.database_name,
-            this.table_name,
-            undefined,
-            undefined,
-            projections,
-            1)
+        let selectArgs: SelectArgs = {
+            database: this.database_name,
+            table: this.table_name,
+            projections: ["id", "bookName"],
+            limit: 1
+        }
+        let resp = await this.client.select(selectArgs);
         if (resp.code != 0) {
             console.log("fail to select data due to: " + resp.msg)
             return resp
@@ -265,19 +329,19 @@ export class MochowTest {
     }
 
     public async updateData() {
-        let pk: PrimaryKey = { "id": "0001" }
-        let update: UpdateFields = {
-            "bookName": "红楼梦",
-            "author": "曹雪芹",
-            "page": 100,
-            "segment": "满纸荒唐言，一把辛酸泪",
-        }
-        let resp = await this.client.updateRow(
-            this.database_name,
-            this.table_name,
-            pk,
-            undefined,
-            update)
+        let resp = await this.client.update({
+            database: this.database_name,
+            table: this.table_name,
+            primaryKey: {
+                id: "0001",
+            },
+            update: {
+                bookName: "红楼梦",
+                author: "曹雪芹",
+                page: 100,
+                segment: "满纸荒唐言，一把辛酸泪",
+            },
+        });
         if (resp.code != 0) {
             console.log("fail to update row due to: " + resp.msg)
             return resp
@@ -433,7 +497,13 @@ export class MochowTest {
     }
 
     public async deleteDataWithPK() {
-        let resp = await this.client.deleteRow(this.database_name, this.table_name, { "id": "0001" })
+        let resp = await this.client.delete({
+            database: this.database_name,
+            table: this.table_name,
+            primaryKey: {
+                "id": "0001"
+            }
+        })
         if (resp.code != 0) {
             console.log("delete data with pk failed")
             return resp
@@ -442,7 +512,11 @@ export class MochowTest {
     }
 
     public async deleteDataWithFilter() {
-        let resp = await this.client.deleteRow(this.database_name, this.table_name, undefined, undefined, "id = '0002'")
+        let resp = await this.client.delete({
+            database: this.database_name,
+            table: this.table_name,
+            filter: "id = '0002'",
+        })
         if (resp.code != 0) {
             console.log("delete data with pk failed")
             return resp
@@ -560,6 +634,7 @@ export class MochowTest {
     await new Promise(f => setTimeout(f, 10000));
     await mochowTest.insertRow()
     await mochowTest.queryData()
+    await mochowTest.batchQuery()
     await mochowTest.selectData()
     await mochowTest.updateData()
     await mochowTest.descIndex()

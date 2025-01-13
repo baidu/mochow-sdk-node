@@ -14,13 +14,13 @@
 
 import { HttpBaseClient } from '../MochowClient'
 import {
+    AddFieldArgs,
     CommonResponse,
     Constructor,
+    CreateTableArgs,
     DescTableResponse,
     ListTableResponse,
-    PartitionParams,
     ShowTableStatsResponse,
-    TableSchema
 } from '../types'
 
 /**
@@ -40,68 +40,52 @@ import {
 export function Table<T extends Constructor<HttpBaseClient>>(Base: T) {
     return class extends Base {
         get tablePrefix() {
-            return '/table'
+            return "/table";
         }
-        async createTable(database: string,
-            table: string,
-            description: string,
-            replication: number,
-            partitionParams: PartitionParams,
-            enableDynamicField: boolean,
-            schema: TableSchema) {
-            const url = `${this.tablePrefix}`
-            const params = { create: '' }
-            const data = {
-                "database": database,
-                "table": table,
-                "description": description,
-                "replication": replication,
-                "partition": partitionParams,
-                "enableDynamicField": enableDynamicField,
-                "schema": schema
-            }
-            return await this.POST<CommonResponse>(url, params, data)
+        async createTable(args: CreateTableArgs) {
+            const url = `${this.tablePrefix}`;
+            const params = { create: "" };
+            return await this.POST<CommonResponse>(url, params, args);
         }
         async dropTable(database: string, table: string) {
-            const url = `${this.tablePrefix}`
-            const data = { "database": database, "table": table }
-            return await this.DELETE<CommonResponse>(url, {}, data)
+            const url = `${this.tablePrefix}`;
+            const data = { database: database, table: table };
+            return await this.DELETE<CommonResponse>(url, {}, data);
         }
         async listTables(databse: string) {
-            const url = `${this.tablePrefix}`
-            const params = { list: '' }
-            const data = { "databse": databse }
-            return await this.POST<ListTableResponse>(url, params, data)
+            const url = `${this.tablePrefix}`;
+            const params = { list: "" };
+            const data = { databse: databse };
+            return await this.POST<ListTableResponse>(url, params, data);
         }
         async descTable(database: string, table: string) {
-            const url = `${this.tablePrefix}`
-            const params = { desc: '' }
-            const data = { "database": database, "table": table }
-            return await this.POST<DescTableResponse>(url, params, data)
+            const url = `${this.tablePrefix}`;
+            const params = { desc: "" };
+            const data = { database: database, table: table };
+            return await this.POST<DescTableResponse>(url, params, data);
         }
-        async addField(database: string, table: string, schema: TableSchema) {
-            const url = `${this.tablePrefix}`
-            const params = { addField: '' }
-            const data = { "database": database, "table": table, "schema": schema }
-            return await this.POST<CommonResponse>(url, params, data)
+        async addField(args: AddFieldArgs) {
+            const url = `${this.tablePrefix}`;
+            const params = { addField: "" };
+            return await this.POST<CommonResponse>(url, params, args);
         }
         async aliasTable(database: string, table: string, alias: string) {
-            const url = `${this.tablePrefix}`
-            const params = { alias: '' }
-            const data = { "database": database, "table": table, "alias": alias }
-            return await this.POST<CommonResponse>(url, params, data)
+            const url = `${this.tablePrefix}`;
+            const params = { alias: "" };
+            const data = { database: database, table: table, alias: alias };
+            return await this.POST<CommonResponse>(url, params, data);
         }
         async unaliasTable(database: string, table: string, alias: string) {
-            const url = `${this.tablePrefix}`
-            const params = { unalias: '' }
-            const data = { "database": database, "table": table, "alias": alias }
-            return await this.POST<CommonResponse>(url, params, data)
+            const url = `${this.tablePrefix}`;
+            const params = { unalias: "" };
+            const data = { database: database, table: table, alias: alias };
+            return await this.POST<CommonResponse>(url, params, data);
         }
         async showTableStats(database: string, table: string) {
-            const url = `${this.tablePrefix}`
-            const params = { stats: '' }
-            const data = { "database": database, "table": table }
-            return await this.POST<ShowTableStatsResponse>(url, params, data)
+            const url = `${this.tablePrefix}`;
+            const params = { stats: "" };
+            const data = { database: database, table: table };
+            return await this.POST<ShowTableStatsResponse>(url, params, data);
         }
-    }
+    };
 }

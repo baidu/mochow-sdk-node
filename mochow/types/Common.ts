@@ -18,3 +18,9 @@ export interface CommonResponse {
     code: number
     msg: string
 }
+
+// Request with given namespace
+export interface CommonNamespaceArgs {
+    database: string
+    table: string
+}

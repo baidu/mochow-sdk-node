@@ -17,25 +17,25 @@ import {
     Row,
     CommonResponse,
     Constructor,
-    ANNSearchParams,
-    BatchANNSearchParams,
-    BatchSearchRowResponse,
-    SearchRowResponse,
-    SelectRowResponse,
-    InsertRowsResponse,
-    QueryRowResponse,
-    UpsertRowsResponse,
-    PrimaryKey,
-    PartitionKey,
-    Marker,
-    UpdateFields,
-    ReadConsistency,
+    BatchSearchResponse,
+    SearchResponse,
+    SelectResponse,
+    InsertArgs,
+    InsertResponse,
+    DeleteArgs,
+    QueryResponse,
+    BatchQueryResponse,
+    UpsertResponse,
     VectorSearchArgs,
     BM25SearchArgs,
     HybridSearchArgs,
     searchRequest,
-    BatchSearchRowResult,
-    SearchRowResult
+    UpsertArgs,
+    QueryArgs,
+    BatchQueryArgs,
+    BatchSearchArgs,
+    UpdateArgs,
+    SelectArgs
 } from '../types'
 
 /**
@@ -43,189 +43,84 @@ import {
  * @param {Constructor<HttpBaseClient>} Base - The base class to be extended.
  * @returns {class} - The extended class with additional methods for collection management.
  *
- * @method insertRows - insert rows
- * @method upsertRows - upsert rows
- * @method deleteRow - delete one row
- * @method queryRow - query row
- * @method searchRow - search one row 
- * @method batchSearchRows - search rows
- * @method updateRow - update one row
+ * @method insert - insert rows
+ * @method upsert - upsert rows
+ * @method delete - delete one row or batch delete with filter
+ * @method query - query one row
+ * @method batchQuery - query rows with multi keys
+ * @method vectorSearch - search with vector
+ * @method bm25Search - search with bm25
+ * @method hybridSearch - hybrid search
+ * @method batchSearch - search rows
+ * @method update - update one row
+ * @method select - select rows with filter
  */
 export function Row<T extends Constructor<HttpBaseClient>>(Base: T) {
     return class extends Base {
         get rowPrefix() {
-            return '/row'
+            return "/row";
         }
-        async insertRows(
-            database: string,
-            table: string,
-            rows: Record<string, any>[]) {
-            const url = `${this.rowPrefix}`
-            const params = { insert: '' }
-            const data = {
-                "database": database,
-                "table": table,
-                "rows": rows
-            }
-            return await this.POST<InsertRowsResponse>(url, params, data)
+        async insert(args: InsertArgs) {
+            const url = `${this.rowPrefix}`;
+            const params = { insert: "" };
+            return await this.POST<InsertResponse>(url, params, args);
         }
-        async upsertRows(
-            database: string,
-            table: string,
-            rows: Row[]) {
-            const url = `${this.rowPrefix}`
-            const params = { upsert: '' }
-            const data = {
-                "database": database,
-                "table": table,
-                "rows": rows
-            }
-            return await this.POST<UpsertRowsResponse>(url, params, data)
+        async upsert(args: UpsertArgs) {
+            const url = `${this.rowPrefix}`;
+            const params = { upsert: "" };
+            return await this.POST<UpsertResponse>(url, params, args);
         }
-        async deleteRow(
-            database: string,
-            table: string,
-            primaryKey?: PrimaryKey,
-            partitionKey?: PartitionKey,
-            filter?: string) {
-            const url = `${this.rowPrefix}`
-            const params = { delete: '' }
-            let data = {
-                "database": database,
-                "table": table,
-                "primaryKey": primaryKey,
-                "partitionKey": partitionKey,
-                "filter": filter
-            }
-            return await this.POST<CommonResponse>(url, params, data)
+        async delete(args: DeleteArgs) {
+            const url = `${this.rowPrefix}`;
+            const params = { delete: "" };
+            return await this.POST<CommonResponse>(url, params, args);
         }
-        async queryRow(
-            database: string,
-            table: string,
-            primaryKey: PrimaryKey,
-            partitionKey?: PartitionKey,
-            projections?: string[],
-            retrieveVector: boolean = false,
-            readConsistency: ReadConsistency = ReadConsistency.EVENTUAL) {
-            const url = `${this.rowPrefix}`
-            const params = { query: '' }
-            const data = {
-                "database": database,
-                "table": table,
-                "primaryKey": primaryKey,
-                "partitionKey": partitionKey,
-                "projections": projections,
-                "retrieveVector": retrieveVector,
-                "readConsistency": readConsistency
-            }
-            return await this.POST<QueryRowResponse>(url, params, data)
+        async query(args: QueryArgs) {
+            const url = `${this.rowPrefix}`;
+            const params = { query: "" };
+            return await this.POST<QueryResponse>(url, params, args);
         }
-        async searchRow(
-            database: string,
-            table: string,
-            anns: ANNSearchParams,
-            partitionKey?: PartitionKey,
-            projections?: string[],
-            retrieveVector: boolean = false,
-            readConsistency: ReadConsistency = ReadConsistency.EVENTUAL) {
-            const url = `${this.rowPrefix}`
-            const params = { search: '' }
-            const data = {
-                "database": database,
-                "table": table,
-                "anns": anns,
-                "partitionKey": partitionKey,
-                "projections": projections,
-                "retrieveVector": retrieveVector,
-                "readConsistency": readConsistency
-            }
-            return await this.POST<SearchRowResponse>(url, params, data)
+        async batchQuery(args: BatchQueryArgs) {
+            const url = `${this.rowPrefix}`;
+            const params = { batchQuery: "" };
+            return await this.POST<BatchQueryResponse>(url, params, args);
         }
-        async batchSearchRows(
-            database: string,
-            table: string,
-            anns: BatchANNSearchParams,
-            partitionKey?: PartitionKey,
-            projections?: string[],
-            retrieveVector: boolean = false,
-            readConsistency: ReadConsistency = ReadConsistency.EVENTUAL
-        ) {
-            const url = `${this.rowPrefix}`
-            const params = { batchSearch: '' }
-            const data = {
-                "database": database,
-                "table": table,
-                "anns": anns,
-                "partitionKey": partitionKey,
-                "retrieveVector": retrieveVector,
-                "projections": projections,
-                "readConsistency": readConsistency
-            }
-            return await this.POST<BatchSearchRowResponse>(url, params, data)
+        async batchSearch(args: BatchSearchArgs) {
+            const url = `${this.rowPrefix}`;
+            const params = { batchSearch: "" };
+            return await this.POST<BatchSearchResponse>(url, params, args);
         }
-        async updateRow(
-            database: string,
-            table: string,
-            primaryKey?: PrimaryKey,
-            partitionKey?: PartitionKey,
-            update?: UpdateFields,
-        ) {
-            const url = `${this.rowPrefix}`
-            const params = { update: '' }
-            const data = {
-                "database": database,
-                "table": table,
-                "partitionKey": partitionKey,
-                "primaryKey": primaryKey,
-                "update": update,
-            }
-            return await this.POST<CommonResponse>(url, params, data)
+        async update(args: UpdateArgs) {
+            const url = `${this.rowPrefix}`;
+            const params = { update: "" };
+            return await this.POST<CommonResponse>(url, params, args);
         }
-        async selectRows(
-            database: string,
-            table: string,
-            filter?: string,
-            marker?: Marker,
-            projections?: string[],
-            limit: number = 10,
-            readConsistency: ReadConsistency = ReadConsistency.EVENTUAL
-        ) {
-            const url = `${this.rowPrefix}`
-            const params = { select: '' }
-            const data = {
-                "database": database,
-                "table": table,
-                "filter": filter,
-                "marker": marker,
-                "projections": projections,
-                "limit": limit,
-                "readConsistency": readConsistency
-            }
-            return await this.POST<SelectRowResponse>(url, params, data)
-        } 
-        async vectorSearch(args :VectorSearchArgs) {
-            return this.search(args.database, args.table, args.request)
-        } 
-        async bm25Search(args :BM25SearchArgs) {
-            return this.search(args.database, args.table, args.request)
+        async select(args: SelectArgs) {
+            const url = `${this.rowPrefix}`;
+            const params = { select: "" };
+            return await this.POST<SelectResponse>(url, params, args);
         }
-        async hybridSearch(args :HybridSearchArgs) {
-            return this.search(args.database, args.table, args.request)
+        async vectorSearch(args: VectorSearchArgs) {
+            return this.search(args.database, args.table, args.request);
         }
-        async search(database :string, table :string, request :searchRequest) {
-            let data = request.toDict()
-            data["database"] = database
-            data["table"] = table
-            const url = `${this.rowPrefix}`
-            let params : Record<string, string> = {}
-            params[request.requestType()] = ''
+        async bm25Search(args: BM25SearchArgs) {
+            return this.search(args.database, args.table, args.request);
+        }
+        async hybridSearch(args: HybridSearchArgs) {
+            return this.search(args.database, args.table, args.request);
+        }
+        async search(database: string, table: string, request: searchRequest) {
+            let data = request.toDict();
+            data["database"] = database;
+            data["table"] = table;
+            const url = `${this.rowPrefix}`;
+            let params: Record<string, string> = {};
+            params[request.requestType()] = "";
             if (request.isBatch()) {
-                return await this.POST<BatchSearchRowResponse>(url, params, data)
+                return await this.POST<BatchSearchResponse>(url, params, data);
             } else {
-                return await this.POST<SearchRowResponse>(url, params, data)
+                return await this.POST<SearchResponse>(url, params, data);
             }
-
-        
         }
-    }
+    };
 }

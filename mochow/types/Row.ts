@@ -12,23 +12,60 @@
  * and limitations under the License.
  */
 
-import { CommonResponse } from "./Common"
+import { CommonResponse, CommonNamespaceArgs } from "./Common";
+import { ReadConsistency } from "./Const";
 
-export type Row = Record<string, any>
-export type PrimaryKey = Record<string, any>
-export type PartitionKey = Record<string, any>
-export type SearchParams = Record<string, any>
-export type UpdateFields = Record<string, any>
-export type Marker = Record<string, any>
+export type Row = Record<string, any>;
+export type PrimaryKey = Record<string, any>;
+export type PartitionKey = Record<string, any>;
+export type SearchParams = Record<string, any>;
+export type UpdateFields = Record<string, any>;
+export type Marker = Record<string, any>;
 
-export interface InsertRowsResponse extends CommonResponse {
-	affectedCount: number
+export interface InsertArgs extends CommonNamespaceArgs {
+    rows: Record<string, any>[];
 }
 
-export interface UpsertRowsResponse extends InsertRowsResponse { }
+export interface InsertResponse extends CommonResponse {
+    affectedCount: number;
+}
 
-export interface QueryRowResponse extends CommonResponse {
-	row: Row
+export interface UpsertArgs extends InsertArgs {}
+
+export interface UpsertResponse extends InsertResponse {}
+
+export interface DeleteArgs extends CommonNamespaceArgs {
+    primaryKey?: PrimaryKey;
+    partitionKey?: PartitionKey;
+    filter?: string;
+}
+
+export interface QueryArgs extends CommonNamespaceArgs {
+    primaryKey: PrimaryKey;
+    partitionKey?: PartitionKey;
+    projections?: string[];
+    retrieveVector?: boolean;
+    readConsistency?: ReadConsistency;
+}
+
+export interface QueryResponse extends CommonResponse {
+    row: Row;
+}
+
+export type QueryKey = {
+    primaryKey: PrimaryKey;
+    partitionKey?: PartitionKey;
+};
+
+export interface BatchQueryArgs extends CommonNamespaceArgs {
+    keys: QueryKey[];
+    projections?: string[];
+    retrieveVector?: boolean;
+    readConsistency?: ReadConsistency;
+}
+
+export interface BatchQueryResponse extends CommonResponse {
+    rows: Row[];
 }
 
 export interface RowResult {
@@ -58,12 +95,12 @@ export interface HybridSearchArgs {
 }
 
 export interface SearchRowResult {
-	searchVectorFloats: number[]
+	searchVectorFloats?: number[]
 	rows: RowResult[]
 }
 
 export interface BatchSearchRowResult {
-	results: SearchRowResult
+	results: SearchRowResult[]
 }
 
 export interface SearchResult {
@@ -72,38 +109,42 @@ export interface SearchResult {
 	batchRows: BatchSearchRowResult
 }
 
-
-export interface SearchRowResponse extends CommonResponse, SearchRowResult {
+export interface SearchResponse extends CommonResponse, SearchRowResult {
 }
 
-export interface BatchSearchRowResponse extends CommonResponse, BatchSearchRowResult {
-}
-
-export interface BatchANNSearchParams {
-	vectorField: string
-	vectorFloats: number[][]
-	params: SearchParams
-	filter: string
+export interface BatchSearchResponse extends CommonResponse, BatchSearchRowResult {
 }
 
 export interface ANNSearchParams {
 	vectorField: string
-	vectorFloats: number[]
+	vectorFloats: number[] | number[][]
 	params: SearchParams
-	filter: string
+	filter?: string
 }
 
-export interface SearchRowArgs {
-	database: string
-	table: string
+export interface BatchSearchArgs extends CommonNamespaceArgs {
 	anns: ANNSearchParams
-	partitionKey: PartitionKey
-	retrieveVector: boolean
-	projections: string[]
-	readConsistency: string
+	partitionKey?: PartitionKey
+	retrieveVector?: boolean
+	projections?: string[]
+	readConsistency?: ReadConsistency
 }
 
-export interface SelectRowResponse extends CommonResponse {
+export interface UpdateArgs extends CommonNamespaceArgs {
+	primaryKey: PrimaryKey
+	partitionKey?: PartitionKey
+	update: UpdateFields
+}
+
+export interface SelectArgs extends CommonNamespaceArgs {
+    filter?: string;
+    marker?: Marker;
+    projections?: string[];
+    limit: number;
+    readConsistency?: ReadConsistency;
+}
+
+export interface SelectResponse extends CommonResponse {
 	isTruncated: boolean
 	nextMarker: Marker
 	rows: Row[]

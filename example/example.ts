@@ -163,7 +163,7 @@ export class MochowTest {
             table: this.table_name,
             description: "test",
             replication: 1,
-            partitionParams: {
+            partition: {
                 partitionType: PartitionType.HASH,
                 partitionNum: 1,
             },

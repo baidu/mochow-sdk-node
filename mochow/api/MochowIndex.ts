@@ -53,10 +53,10 @@ export function Index<T extends Constructor<HttpBaseClient>>(Base: T) {
             const data = { "database": database, "table": table , "indexName" : indexName}
             return await this.DELETE<CommonResponse>(url, {}, data)
         }
-        async descIndex(databse: string, table: string, indexName: string) {
+        async descIndex(database: string, table: string, indexName: string) {
             const url = `${this.indexPrefix}`
             const params = { desc: '' }
-            const data = { "database": databse, "table": table, "indexName":indexName }
+            const data = { "database": database, "table": table, "indexName":indexName }
             return await this.POST<DescIndexResponse>(url, params, data)
         }
         async modifyIndex(database: string, table: string, indexSchema : IndexSchema) {

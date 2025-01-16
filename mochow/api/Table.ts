@@ -52,10 +52,10 @@ export function Table<T extends Constructor<HttpBaseClient>>(Base: T) {
             const data = { database: database, table: table };
             return await this.DELETE<CommonResponse>(url, {}, data);
         }
-        async listTables(databse: string) {
+        async listTables(database: string) {
             const url = `${this.tablePrefix}`;
             const params = { list: "" };
-            const data = { databse: databse };
+            const data = { database: database };
             return await this.POST<ListTableResponse>(url, params, data);
         }
         async descTable(database: string, table: string) {

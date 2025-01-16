@@ -41,7 +41,7 @@ export interface TableSchema {
 export interface CreateTableArgs extends CommonNamespaceArgs {
     description?: string;
     replication: number;
-    partitionParams: PartitionParams;
+    partition: PartitionParams;
     enableDynamicField?: boolean;
     schema: TableSchema;
 }
